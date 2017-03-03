@@ -40,10 +40,19 @@ class ZoozDriver(port: Int) {
                              paymentMethodToken: String) =
     AuthorizationRequest(programId, programKey, payment, paymentToken, paymentMethodToken)
 
+  def aCaptureRequest(programId: String,
+                      programKey: String,
+                      payment: Payment,
+                      paymentToken: String) =
+    CaptureRequest(programId, programKey, payment, paymentToken)
+
   abstract class ZoozRequest(programId: String, programKey: String) {
     protected def expectedJsonBody: Map[String, Any]
 
     def isAnErrorWith(errorMessage: String): Unit = respondWith(errorResponse(errorMessage))
+
+    def isAFatalErrorWith(errorMessage: String, statusCode: StatusCode = StatusCodes.BadRequest): Unit =
+      respondWith(errorResponse(errorMessage), statusCode)
 
     private def errorResponse(errorMessage: String) = Map(
       "responseStatus" -> -1,
@@ -83,6 +92,24 @@ class ZoozDriver(port: Int) {
     private def toMap(entity: HttpEntity): Map[String, Any] = Serialization.read[Map[String, Any]](entity.asString)
 
     protected def randomStringWithLength(length: Int): String = Random.alphanumeric.take(length).mkString
+  }
+
+  abstract class ZoozRejectableRequest(programId: String, programKey: String) extends ZoozRequest(programId, programKey) {
+    def isRejectedWith(reason: String): Unit = respondWith(rejectResponse(reason))
+
+    private def rejectResponse(reason: String) = Map(
+      "responseStatus" -> -1,
+      "responseObject" -> Map(
+        "processorError" -> Map(
+          "processorName" -> "N/A",
+          "declineCode" -> Random.nextInt(999),
+          "declineReason" -> reason
+        ),
+        "errorMessage" -> Random.nextString(20),
+        "errorDescription" -> Random.nextString(20),
+        "responseErrorCode" -> Random.nextInt(999999)
+      )
+    )
   }
 
   case class OpenPaymentRequest(programId: String,
@@ -177,7 +204,7 @@ class ZoozDriver(port: Int) {
                                   payment: Payment,
                                   paymentToken: String,
                                   paymentMethodToken: String)
-    extends ZoozRequest(programId, programKey) {
+    extends ZoozRejectableRequest(programId, programKey) {
 
     override protected def expectedJsonBody = Map(
       "command" -> "authorizePayment",
@@ -204,20 +231,28 @@ class ZoozDriver(port: Int) {
         "processorReferenceId" -> authorizationCode
       )
     )
+  }
 
-    def isRejectedWith(reason: String): Unit = respondWith(rejectResponse(reason))
+  case class CaptureRequest(programId: String,
+                            programKey: String,
+                            payment: Payment,
+                            paymentToken: String)
+    extends ZoozRejectableRequest(programId, programKey) {
 
-    private def rejectResponse(reason: String) = Map(
-      "responseStatus" -> -1,
+    override protected def expectedJsonBody = Map(
+      "command" -> "commitPayment",
+      "paymentToken" -> paymentToken,
+      "amount" -> payment.currencyAmount.amount
+    )
+
+    def returns(captureCode: String): Unit = respondWith(validResponse(captureCode))
+
+    private def validResponse(captureCode: String) = Map(
+      "responseStatus" -> 0,
       "responseObject" -> Map(
-        "processorError" -> Map(
-          "processorName" -> "N/A",
-          "declineCode" -> Random.nextInt(999),
-          "declineReason" -> reason
-        ),
-        "errorMessage" -> Random.nextString(20),
-        "errorDescription" -> Random.nextString(20),
-        "responseErrorCode" -> Random.nextInt(999999)
+        "captureCode" -> captureCode,
+        "actionID" -> randomStringWithLength(26),
+        "processorName" -> "N/A"
       )
     )
   }

@@ -11,7 +11,7 @@ class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID()
                          defaultEmail: String = "example@example.org") {
   private val paymentMethodType = "CreditCard"
 
-  def openPaymentRequest(payment: Payment, deal: Deal): JObject = JObject(
+  def openPaymentRequest(payment: Payment, deal: Deal) = JObject(
     "command" -> "openPayment",
     "paymentDetails" -> JObject(
       "amount" -> payment.currencyAmount.amount,
@@ -25,7 +25,7 @@ class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID()
     )
   )
 
-  def addPaymentMethodRequest(creditCard: CreditCard, customer: Option[Customer], paymentToken: String): JObject = JObject(
+  def addPaymentMethodRequest(creditCard: CreditCard, customer: Option[Customer], paymentToken: String) = JObject(
     "command" -> "addPaymentMethod",
     "paymentToken" -> paymentToken,
     "email" -> email(customer),
@@ -43,7 +43,7 @@ class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID()
     )
   )
 
-  def authorizeRequest(payment: Payment, paymentToken: String, paymentMethodToken: String): JObject = JObject(
+  def authorizeRequest(payment: Payment, paymentToken: String, paymentMethodToken: String) = JObject(
     "command" -> "authorizePayment",
     "paymentToken" -> paymentToken,
     "paymentMethod" -> JObject(
@@ -53,6 +53,12 @@ class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID()
     "paymentInstallments" -> Map(
       "numOfInstallments" -> payment.installments
     )
+  )
+
+  def captureRequest(paymentToken: String, amount: Double) = JObject(
+    "command" -> "commitPayment",
+    "paymentToken" -> paymentToken,
+    "amount" -> amount
   )
 
   private def email(customer: Option[Customer]): String = customer.flatMap(_.email).filterEmpty.getOrElse(defaultEmail)

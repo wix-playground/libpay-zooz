@@ -20,7 +20,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
       givenAuthorizationRequest(paymentToken, paymentMethodToken) returns authorizationCode
 
-      authorize() must beSuccessfulAuthorizationWith(authorizationCode)
+      authorize() must beSuccessfulAuthorizationWith(authorizationCode, paymentToken)
     }
 
     "fail with PaymentRejectedException for rejected transactions" in new ctx {
@@ -37,9 +37,22 @@ class ZoozGatewayIT extends SpecWithJUnit {
       authorize() must failWithMessage(errorMessage)
     }
 
+    "fail with PaymentErrorException when opening a payment fails fatally" in new ctx {
+      givenOpenPaymentRequest isAFatalErrorWith errorMessage
+
+      authorize() must failWithMessage(errorMessage)
+    }
+
     "fail with PaymentErrorException when adding a payment method fails" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) isAnErrorWith errorMessage
+
+      authorize() must failWithMessage(errorMessage)
+    }
+
+    "fail with PaymentErrorException when adding a payment method fails fatally" in new ctx {
+      givenOpenPaymentRequest returns paymentToken
+      givenAddPaymentMethodRequest(paymentToken) isAFatalErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
@@ -50,6 +63,40 @@ class ZoozGatewayIT extends SpecWithJUnit {
       givenAuthorizationRequest(paymentToken, paymentMethodToken) isAnErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
+    }
+
+    "fail with PaymentErrorException when authorization fails fatally" in new ctx {
+      givenOpenPaymentRequest returns paymentToken
+      givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) isAFatalErrorWith errorMessage
+
+      authorize() must failWithMessage(errorMessage)
+    }
+  }
+
+  "capture request" should {
+    "successfully yield a captureCode upon a valid request" in new ctx {
+      givenCaptureRequest(paymentToken) returns captureCode
+
+      capture(paymentToken) must beSuccessfulCaptureWith(captureCode)
+    }
+
+    "fail with PaymentRejectedException for rejected transactions" in new ctx {
+      givenCaptureRequest(paymentToken) isRejectedWith errorMessage
+
+      capture(paymentToken) must beRejectedWithMessage(errorMessage)
+    }
+
+    "fail with PaymentErrorException when capture fails" in new ctx {
+      givenCaptureRequest(paymentToken) isAnErrorWith errorMessage
+
+      capture(paymentToken) must failWithMessage(errorMessage)
+    }
+
+    "fail with PaymentErrorException when capture fails fatally" in new ctx {
+      givenCaptureRequest(paymentToken) isAFatalErrorWith errorMessage
+
+      capture(paymentToken) must failWithMessage(errorMessage)
     }
   }
 
@@ -63,13 +110,16 @@ class ZoozGatewayIT extends SpecWithJUnit {
 
     driver.reset()
 
-    def givenOpenPaymentRequest = driver.anOpenPaymentRequest(programId, programKey, payment, someDeal, customerLoginId)
+    def givenOpenPaymentRequest = driver.anOpenPaymentRequest(programId, programKey, somePayment, someDeal, customerLoginId)
 
     def givenAddPaymentMethodRequest(paymentToken: String) = driver.anAddPaymentMethodRequest(programId, programKey, someCreditCard, someCustomer, paymentToken)
 
     def givenAuthorizationRequest(paymentToken: String, paymentMethodToken: String) =
-      driver.anAuthorizationRequest(programId, programKey, payment, paymentToken, paymentMethodToken)
+      driver.anAuthorizationRequest(programId, programKey, somePayment, paymentToken, paymentMethodToken)
 
-    def authorize() = gateway.authorize(someMerchantStr, someCreditCard, payment, Some(someCustomer), Some(someDeal))
+    def givenCaptureRequest(paymentToken: String) = driver.aCaptureRequest(programId, programKey, somePayment, paymentToken)
+
+    def authorize() = gateway.authorize(someMerchantStr, someCreditCard, somePayment, Some(someCustomer), Some(someDeal))
+    def capture(paymentToken: String) = gateway.capture(someMerchantStr, authorization(authorizationCode, paymentToken), somePayment.currencyAmount.amount)
   }
 }

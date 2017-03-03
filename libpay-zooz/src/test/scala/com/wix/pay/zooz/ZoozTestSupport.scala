@@ -19,14 +19,15 @@ trait ZoozTestSupport extends LibPayTestSupport {
   val paymentToken = randomStringWithLength(26)
   val paymentMethodToken = randomStringWithLength(26)
   val authorizationCode = randomStringWithLength(18)
+  val captureCode = randomStringWithLength(18)
   val errorMessage = "Some error message"
 
-  def authorization(authorizationCode: String): String = JsonZoozAuthorizationParser.stringify(ZoozAuthorization(authorizationCode))
-
-  val payment = somePayment.withInstallments(2)
+  def authorization(authorizationCode: String, paymentToken: String) =
+    JsonZoozAuthorizationParser.stringify(ZoozAuthorization(authorizationCode, paymentToken))
 
   def succeedWith(value: String): Matcher[Try[String]] = beSuccessfulTry.withValue(value)
-  def beSuccessfulAuthorizationWith(authorizationCode: String): Matcher[Try[String]] = succeedWith(authorization(authorizationCode))
+  def beSuccessfulAuthorizationWith(authorizationCode: String, paymentToken: String): Matcher[Try[String]] = succeedWith(authorization(authorizationCode, paymentToken))
+  def beSuccessfulCaptureWith(captureCode: String): Matcher[Try[String]] = succeedWith(captureCode)
   def beRejectedWithMessage(message: String): Matcher[Try[String]] = beFailedTry.like { case e: PaymentRejectedException => e.message must contain(message) }
   def failWithMessage(message: String): Matcher[Try[String]] = beFailedTry.like { case e: PaymentErrorException => e.message must contain(message) }
   def beParseError: Matcher[Try[String]] = beFailedTry.like { case e: PaymentErrorException => e.cause must beAnInstanceOf[ParseException] }

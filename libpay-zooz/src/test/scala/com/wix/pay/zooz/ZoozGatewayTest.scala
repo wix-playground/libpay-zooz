@@ -38,6 +38,16 @@ class ZoozGatewayTest extends SpecWithJUnit {
     }
   }
 
+  "void request" should {
+    "fail on invalid merchantKey format" in new ctx {
+      void(merchantKey = "invalid") must beParseError
+    }
+
+    "fail on invalid authorizationKey format" in new ctx {
+      void(authorizationKey = "invalid") must beParseError
+    }
+  }
+
   trait ctx extends Scope with ZoozTestSupport {
     val gateway = new ZoozGateway("")
 
@@ -46,5 +56,8 @@ class ZoozGatewayTest extends SpecWithJUnit {
 
     def capture(merchantKey: String = someMerchantStr, authorizationKey: String = authorization(authorizationCode, paymentToken)) =
       gateway.capture(merchantKey, authorizationKey, somePayment.currencyAmount.amount)
+
+    def void(merchantKey: String = someMerchantStr, authorizationKey: String = authorization(authorizationCode, paymentToken)) =
+      gateway.voidAuthorization(merchantKey, authorizationKey)
   }
 }

@@ -20,6 +20,7 @@ trait ZoozTestSupport extends LibPayTestSupport {
   val paymentMethodToken = randomStringWithLength(26)
   val authorizationCode = randomStringWithLength(18)
   val captureCode = randomStringWithLength(18)
+  val voidReferenceId = randomStringWithLength(18)
   val errorMessage = "Some error message"
 
   def authorization(authorizationCode: String, paymentToken: String) =
@@ -28,6 +29,7 @@ trait ZoozTestSupport extends LibPayTestSupport {
   def succeedWith(value: String): Matcher[Try[String]] = beSuccessfulTry.withValue(value)
   def beSuccessfulAuthorizationWith(authorizationCode: String, paymentToken: String): Matcher[Try[String]] = succeedWith(authorization(authorizationCode, paymentToken))
   def beSuccessfulCaptureWith(captureCode: String): Matcher[Try[String]] = succeedWith(captureCode)
+  def beSuccessfulVoidWith(voidReferenceId: String): Matcher[Try[String]] = succeedWith(voidReferenceId)
   def beRejectedWithMessage(message: String): Matcher[Try[String]] = beFailedTry.like { case e: PaymentRejectedException => e.message must contain(message) }
   def failWithMessage(message: String): Matcher[Try[String]] = beFailedTry.like { case e: PaymentErrorException => e.message must contain(message) }
   def beParseError: Matcher[Try[String]] = beFailedTry.like { case e: PaymentErrorException => e.cause must beAnInstanceOf[ParseException] }

@@ -34,6 +34,7 @@ object ZoozFakeClient extends App {
   val paymentMethodToken = addPaymentMethod(paymentToken)
   val authorizationCode = authorize(paymentToken, paymentMethodToken)
   capture(paymentToken)
+//  void(paymentToken)
 
 //  createMerchant()
 
@@ -92,9 +93,18 @@ object ZoozFakeClient extends App {
   def capture(paymentToken: String): String = timed("capture") {
     val content = Map(
       "command" -> "commitPayment",
-      "paymentToken" -> paymentToken
+      "paymentToken" -> paymentToken,
+      "amount" -> amount
     )
     (postPayment(content) \ "responseObject" \ "captureCode").extract[String]
+  }
+
+  def void(paymentToken: String): Unit = timed("void") {
+    val content = Map(
+      "command" -> "voidPayment",
+      "paymentToken" -> paymentToken
+    )
+    (postPayment(content) \ "responseObject" \ "voidReferenceId").extract[String]
   }
 
   def createMerchant(): String = timed("createMerchant") {

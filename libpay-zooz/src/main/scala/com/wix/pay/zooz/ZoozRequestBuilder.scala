@@ -61,6 +61,11 @@ class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID()
     "amount" -> amount
   )
 
+  def voidRequest(paymentToken: String) = JObject(
+    "command" -> "voidPayment",
+    "paymentToken" -> paymentToken
+  )
+
   private def email(customer: Option[Customer]): String = customer.flatMap(_.email).filterEmpty.getOrElse(defaultEmail)
 
   private implicit class OptionStringExtensions(o: Option[String]) {

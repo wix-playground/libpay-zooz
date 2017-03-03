@@ -46,6 +46,11 @@ class ZoozDriver(port: Int) {
                       paymentToken: String) =
     CaptureRequest(programId, programKey, payment, paymentToken)
 
+  def aVoidRequest(programId: String,
+                   programKey: String,
+                   paymentToken: String) =
+    VoidRequest(programId, programKey, paymentToken)
+
   abstract class ZoozRequest(programId: String, programKey: String) {
     protected def expectedJsonBody: Map[String, Any]
 
@@ -252,6 +257,27 @@ class ZoozDriver(port: Int) {
       "responseObject" -> Map(
         "captureCode" -> captureCode,
         "actionID" -> randomStringWithLength(26),
+        "processorName" -> "N/A"
+      )
+    )
+  }
+
+  case class VoidRequest(programId: String,
+                         programKey: String,
+                         paymentToken: String)
+    extends ZoozRejectableRequest(programId, programKey) {
+
+    override protected def expectedJsonBody = Map(
+      "command" -> "voidPayment",
+      "paymentToken" -> paymentToken
+    )
+
+    def returns(voidReferenceId: String): Unit = respondWith(validResponse(voidReferenceId))
+
+    private def validResponse(voidReferenceId: String) = Map(
+      "responseStatus" -> 0,
+      "responseObject" -> Map(
+        "voidReferenceId" -> voidReferenceId,
         "processorName" -> "N/A"
       )
     )

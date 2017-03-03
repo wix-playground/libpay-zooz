@@ -23,10 +23,8 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
                          creditCard: CreditCard,
                          payment: Payment,
                          customer: Option[Customer],
-                         deal: Option[Deal]): Try[String] = withExceptionHandling {
+                         deal: Option[Deal]): Try[String] = withContext(merchantKey) { context =>
     validateParams(creditCard, deal)
-
-    val context = new RequestContext(merchantKey)
 
     val paymentToken = context.openPayment(payment, deal.get)
     val paymentMethodToken = context.addPaymentMethod(creditCard, customer, paymentToken)
@@ -35,8 +33,7 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
     authorizationParser.stringify(ZoozAuthorization(authorizationCode = authorizationCode, paymentToken = paymentToken))
   }
 
-  override def capture(merchantKey: String, authorizationKey: String, amount: Double): Try[String] = withExceptionHandling {
-    val context = new RequestContext(merchantKey)
+  override def capture(merchantKey: String, authorizationKey: String, amount: Double): Try[String] = withContext(merchantKey) { context =>
     val authorization = authorizationParser.parse(authorizationKey)
 
     val captureCode = context.capture(authorization.paymentToken, amount)
@@ -45,13 +42,24 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
 
   override def sale(merchantKey: String, creditCard: CreditCard, payment: Payment, customer: Option[Customer], deal: Option[Deal]): Try[String] = ???
 
-  override def voidAuthorization(merchantKey: String, authorizationKey: String): Try[String] = ???
+  override def voidAuthorization(merchantKey: String, authorizationKey: String): Try[String] = withContext(merchantKey) { context =>
+    val authorization = authorizationParser.parse(authorizationKey)
+
+    val voidReferenceId = context.void(authorization.paymentToken)
+    voidReferenceId
+  }
 
   private def validateParams(creditCard: CreditCard, deal: Option[Deal]): Unit = {
     require(creditCard.csc.isDefined, "Credit Card CSC is mandatory for ZooZ!")
     require(creditCard.holderName.isDefined, "Credit Card holder name is mandatory for ZooZ!")
     require(deal.isDefined, "Deal is mandatory for ZooZ!")
     require(deal.get.invoiceId.isDefined, "Deal invoiceId is mandatory for ZooZ!")
+  }
+
+  private def withContext(merchantKey: String)(f: RequestContext => String): Try[String] = withExceptionHandling {
+    val merchant = merchantParser.parse(merchantKey)
+    val context = new RequestContext(merchant)
+    f(context)
   }
 
   private def withExceptionHandling(f: => String): Try[String] = {
@@ -64,45 +72,45 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
     }
   }
 
-  private class RequestContext(merchantKey: String) {
-    private val ZoozMerchant(programId, programKey) = merchantParser.parse(merchantKey)
+  private class RequestContext(merchant: ZoozMerchant) {
 
     def openPayment(payment: Payment, deal: Deal): String = {
       val content = requestBuilder.openPaymentRequest(payment, deal)
-      getToken(programId, programKey, content, "paymentToken")
+      getToken(content, "paymentToken")
     }
 
-    def addPaymentMethod(creditCard: CreditCard,
-                                 customer: Option[Customer],
-                                 paymentToken: String): String = {
+    def addPaymentMethod(creditCard: CreditCard, customer: Option[Customer], paymentToken: String): String = {
       val content = requestBuilder.addPaymentMethodRequest(creditCard, customer, paymentToken)
-      getToken(programId, programKey, content, "paymentMethodToken")
+      getToken(content, "paymentMethodToken")
     }
 
-    def authorize(payment: Payment,
-                          paymentToken: String,
-                          paymentMethodToken: String): String = {
+    def authorize(payment: Payment, paymentToken: String, paymentMethodToken: String): String = {
       val content = requestBuilder.authorizeRequest(payment, paymentToken = paymentToken, paymentMethodToken = paymentMethodToken)
-      getToken(programId, programKey, content, "authorizationCode")
+      getToken(content, "authorizationCode")
     }
 
     def capture(paymentToken: String, amount: Double): String = {
       val content = requestBuilder.captureRequest(paymentToken, amount)
-      getToken(programId, programKey, content, "captureCode")
+      getToken(content, "captureCode")
     }
 
-    private def getToken(programId: String, programKey: String, content: JObject, tokenFieldName: String): String = {
-      val response = post(programId, programKey, content)
+    def void(paymentToken: String): String = {
+      val content = requestBuilder.voidRequest(paymentToken)
+      getToken(content, "voidReferenceId")
+    }
+
+    private def getToken(content: JObject, tokenFieldName: String): String = {
+      val response = post(content)
       (response \ "responseObject" \ tokenFieldName).extract[String]
     }
 
-    private def post(programId: String, programKey: String, content: JObject): JValue = {
+    private def post(content: JObject): JValue = {
       val response = requestFactory.buildPostRequest(
         new GenericUrl(s"$endpointUrl/mobile/ZooZPaymentAPI"),
         new ByteArrayContent("application/json", compact(render(content)).getBytes("UTF-8"))
       ).setHeaders(new HttpHeaders()
-        .set("ZooZUniqueID", programId)
-        .set("ZooZAppKey", programKey)
+        .set("ZooZUniqueID", merchant.programId)
+        .set("ZooZAppKey", merchant.programKey)
         .set("ZooZResponseType", "JSon")
       ).execute()
 

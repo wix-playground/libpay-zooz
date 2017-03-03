@@ -100,6 +100,32 @@ class ZoozGatewayIT extends SpecWithJUnit {
     }
   }
 
+  "voidAuthorization request" should {
+    "successfully yield a voidReferenceId upon a valid request" in new ctx {
+      givenVoidRequest(paymentToken) returns voidReferenceId
+
+      void(paymentToken) must beSuccessfulVoidWith(voidReferenceId)
+    }
+
+    "fail with PaymentRejectedException for rejected transactions" in new ctx {
+      givenVoidRequest(paymentToken) isRejectedWith errorMessage
+
+      void(paymentToken) must beRejectedWithMessage(errorMessage)
+    }
+
+    "fail with PaymentErrorException when void fails" in new ctx {
+      givenVoidRequest(paymentToken) isAnErrorWith errorMessage
+
+      void(paymentToken) must failWithMessage(errorMessage)
+    }
+
+    "fail with PaymentErrorException when capture fails fatally" in new ctx {
+      givenVoidRequest(paymentToken) isAFatalErrorWith errorMessage
+
+      void(paymentToken) must failWithMessage(errorMessage)
+    }
+  }
+
   step {
     driver.stop()
   }
@@ -119,7 +145,10 @@ class ZoozGatewayIT extends SpecWithJUnit {
 
     def givenCaptureRequest(paymentToken: String) = driver.aCaptureRequest(programId, programKey, somePayment, paymentToken)
 
+    def givenVoidRequest(paymentToken: String) = driver.aVoidRequest(programId, programKey, paymentToken)
+
     def authorize() = gateway.authorize(someMerchantStr, someCreditCard, somePayment, Some(someCustomer), Some(someDeal))
     def capture(paymentToken: String) = gateway.capture(someMerchantStr, authorization(authorizationCode, paymentToken), somePayment.currencyAmount.amount)
+    def void(paymentToken: String) = gateway.voidAuthorization(someMerchantStr, authorization(authorizationCode, paymentToken))
   }
 }

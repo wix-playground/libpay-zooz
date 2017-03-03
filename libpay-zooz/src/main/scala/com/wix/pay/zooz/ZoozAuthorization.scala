@@ -1,3 +1,3 @@
 package com.wix.pay.zooz
 
-case class ZoozAuthorization()
+case class ZoozAuthorization(authorizationCode: String)

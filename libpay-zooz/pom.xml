@@ -32,12 +32,23 @@
             <version>${com.wix.pay.libpay.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>${com.google.http.client.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-native_${scala.dependencies.version}</artifactId>
             <version>${org.json4js.version}</version>
         </dependency>
 
         <!-- Test Dependencies -->
+        <dependency>
+            <groupId>com.wix.pay</groupId>
+            <artifactId>libpay-testkit</artifactId>
+            <version>${com.wix.pay.libpay.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.wix.pay</groupId>
             <artifactId>libpay-zooz-testkit</artifactId>

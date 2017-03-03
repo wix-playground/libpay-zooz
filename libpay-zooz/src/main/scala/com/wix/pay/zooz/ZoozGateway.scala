@@ -40,7 +40,14 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
     captureCode
   }
 
-  override def sale(merchantKey: String, creditCard: CreditCard, payment: Payment, customer: Option[Customer], deal: Option[Deal]): Try[String] = ???
+  override def sale(merchantKey: String, creditCard: CreditCard, payment: Payment, customer: Option[Customer], deal: Option[Deal]): Try[String] = {
+    for {
+      authorizationKey <- authorize(merchantKey, creditCard, payment, customer, deal)
+      captureCode <- capture(merchantKey, authorizationKey, payment.currencyAmount.amount)
+    } yield {
+      captureCode
+    }
+  }
 
   override def voidAuthorization(merchantKey: String, authorizationKey: String): Try[String] = withContext(merchantKey) { context =>
     val authorization = authorizationParser.parse(authorizationKey)

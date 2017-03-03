@@ -48,6 +48,28 @@ class ZoozGatewayTest extends SpecWithJUnit {
     }
   }
 
+  "sale request" should {
+    "fail on invalid merchantKey format" in new ctx {
+      sale(merchantKey = "invalid") must beParseError
+    }
+
+    "fail if credit card is missing CSC" in new ctx {
+      sale(creditCard = someCreditCard.withoutCsc) must failWithMessage("Credit Card CSC is mandatory for ZooZ!")
+    }
+
+    "fail if credit card is missing holderName" in new ctx {
+      sale(creditCard = someCreditCard.withoutHolderName) must failWithMessage("Credit Card holder name is mandatory for ZooZ!")
+    }
+
+    "fail if deal is missing" in new ctx {
+      sale(deal = None) must failWithMessage("Deal is mandatory for ZooZ!")
+    }
+
+    "fail if deal invoiceId is missing" in new ctx {
+      sale(deal = Some(someDeal.withoutInvoiceId)) must failWithMessage("Deal invoiceId is mandatory for ZooZ!")
+    }
+  }
+
   trait ctx extends Scope with ZoozTestSupport {
     val gateway = new ZoozGateway("")
 
@@ -59,5 +81,8 @@ class ZoozGatewayTest extends SpecWithJUnit {
 
     def void(merchantKey: String = someMerchantStr, authorizationKey: String = authorization(authorizationCode, paymentToken)) =
       gateway.voidAuthorization(merchantKey, authorizationKey)
+
+    def sale(merchantKey: String = someMerchantStr, creditCard: CreditCard = someCreditCard, deal: Option[Deal] = Some(someDeal)) =
+      gateway.sale(merchantKey, creditCard, somePayment, Some(someCustomer), deal)
   }
 }

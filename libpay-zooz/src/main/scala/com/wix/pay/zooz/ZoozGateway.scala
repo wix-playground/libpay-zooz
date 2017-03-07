@@ -122,7 +122,7 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
       ).execute()
 
       try {
-        val responseContent = parse(response.getContent)
+        val responseContent = parse(response.parseAsString())
         assertResponseOk(responseContent)
         responseContent
       } finally {

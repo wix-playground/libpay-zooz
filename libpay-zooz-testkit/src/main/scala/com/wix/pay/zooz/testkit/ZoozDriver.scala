@@ -72,11 +72,11 @@ class ZoozDriver(port: Int) {
       probe.handlers += {
         case HttpRequest(HttpMethods.POST, uri, headers, entity, _)
           if uri.path == Path("/mobile/ZooZPaymentAPI") && isJson(headers) && isAuthorized(headers) && isStubbedEntity(entity) =>
-          HttpResponse(status = status, entity = toJson(content))
+          HttpResponse(status = status, entity = toJson(content), headers = List(HttpHeaders.`Content-Type`(ContentTypes.`application/json`)))
       }
     }
 
-    private def isJson(headers: List[HttpHeader]): Boolean = headerExists(headers, "Content-Type", "application/json")
+    private def isJson(headers: List[HttpHeader]): Boolean = headers.contains(HttpHeaders.`Content-Type`(ContentTypes.`application/json`))
 
     private def isAuthorized(headers: List[HttpHeader]): Boolean = {
       headerExists(headers, "ZooZUniqueID", programId) && headerExists(headers, "ZooZAppKey", programKey)

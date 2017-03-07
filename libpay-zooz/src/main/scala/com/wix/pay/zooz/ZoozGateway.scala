@@ -114,7 +114,7 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
     private def post(content: JObject): JValue = {
       val response = requestFactory.buildPostRequest(
         new GenericUrl(s"$endpointUrl/mobile/ZooZPaymentAPI"),
-        new ByteArrayContent("application/json", compact(render(content)).getBytes("UTF-8"))
+        new ByteArrayContent("application/json;charset=utf-8", compact(render(content)).getBytes("UTF-8"))
       ).setHeaders(new HttpHeaders()
         .set("ZooZUniqueID", merchant.programId)
         .set("ZooZAppKey", merchant.programKey)

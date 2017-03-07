@@ -140,7 +140,7 @@ object ZoozFakeClient extends App {
   private def post(url: String, content: Map[String, Any], headers: HttpHeaders) = {
     val response = requestFactory.buildPostRequest(
       new GenericUrl(url),
-      new ByteArrayContent("application/json", Serialization.write(content).getBytes("UTF-8"))
+      new ByteArrayContent("application/json;charset=utf-8", Serialization.write(content).getBytes("UTF-8"))
     ).setHeaders(headers).execute()
     val str = response.parseAsString()
     println(s"[${response.getStatusCode}] Raw result: $str")

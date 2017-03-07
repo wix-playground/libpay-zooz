@@ -121,9 +121,13 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
         .set("ZooZResponseType", "JSon")
       ).execute()
 
-      val responseContent = parse(response.getContent)
-      assertResponseOk(responseContent)
-      responseContent
+      try {
+        val responseContent = parse(response.getContent)
+        assertResponseOk(responseContent)
+        responseContent
+      } finally {
+        response.disconnect()
+      }
     }
 
     private def assertResponseOk(responseContent: JValue): Unit = {

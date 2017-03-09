@@ -1,14 +1,11 @@
 package com.wix.pay.zooz
 
-import java.util.UUID
-
 import com.wix.pay.creditcard.CreditCard
 import com.wix.pay.model.{Customer, Deal, Payment}
 import org.json4s.JsonDSL._
 import org.json4s._
 
-class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID().toString,
-                         defaultEmail: String = "example@example.org") {
+class ZoozRequestBuilder(defaultEmail: String = "example@example.org") {
   private val paymentMethodType = "CreditCard"
 
   def openPaymentRequest(payment: Payment, deal: Deal) = JObject(
@@ -18,7 +15,7 @@ class ZoozRequestBuilder(customerLoginIdGenerator: => String = UUID.randomUUID()
       "currencyCode" -> payment.currencyAmount.currency
     ),
     "customerDetails" -> Map(
-      "customerLoginID" -> customerLoginIdGenerator
+      "customerLoginID" -> deal.id
     ),
     "invoice" -> Map(
       "number" -> deal.invoiceId.get

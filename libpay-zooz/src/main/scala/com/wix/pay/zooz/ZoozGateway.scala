@@ -60,6 +60,7 @@ class ZoozGateway(endpointUrl: String = productionEndpoint,
     require(creditCard.csc.isDefined, "Credit Card CSC is mandatory for ZooZ!")
     require(creditCard.holderName.isDefined, "Credit Card holder name is mandatory for ZooZ!")
     require(deal.isDefined, "Deal is mandatory for ZooZ!")
+    require(deal.get.id.nonEmpty, "Deal id cannot be empty for ZooZ!")
     require(deal.get.invoiceId.isDefined, "Deal invoiceId is mandatory for ZooZ!")
   }
 

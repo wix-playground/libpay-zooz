@@ -219,12 +219,11 @@ class ZoozGatewayIT extends SpecWithJUnit {
   }
 
   trait ctx extends Scope with ZoozTestSupport {
-    private val requestBuilder = new ZoozRequestBuilder(customerLoginIdGenerator = customerLoginId)
-    val gateway = new ZoozGateway(s"http://localhost:$probePort", requestBuilder = requestBuilder)
+    val gateway = new ZoozGateway(s"http://localhost:$probePort")
 
     driver.reset()
 
-    def givenOpenPaymentRequest = driver.anOpenPaymentRequest(programId, programKey, somePayment, someDeal, customerLoginId)
+    def givenOpenPaymentRequest = driver.anOpenPaymentRequest(programId, programKey, somePayment, someDeal)
 
     def givenAddPaymentMethodRequest(paymentToken: String) = driver.anAddPaymentMethodRequest(programId, programKey, someCreditCard, someCustomer, paymentToken)
 

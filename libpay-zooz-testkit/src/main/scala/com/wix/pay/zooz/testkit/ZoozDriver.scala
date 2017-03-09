@@ -22,9 +22,8 @@ class ZoozDriver(port: Int) {
   def anOpenPaymentRequest(programId: String,
                            programKey: String,
                            payment: Payment,
-                           deal: Deal,
-                           customerLoginId: String) =
-    OpenPaymentRequest(programId, programKey, payment, deal, customerLoginId)
+                           deal: Deal) =
+    OpenPaymentRequest(programId, programKey, payment, deal)
 
   def anAddPaymentMethodRequest(programId: String,
                                 programKey: String,
@@ -120,8 +119,7 @@ class ZoozDriver(port: Int) {
   case class OpenPaymentRequest(programId: String,
                                 programKey: String,
                                 payment: Payment,
-                                deal: Deal,
-                                customerLoginId: String)
+                                deal: Deal)
     extends ZoozRequest(programId, programKey) {
 
     override protected def expectedJsonBody = Map(
@@ -131,7 +129,7 @@ class ZoozDriver(port: Int) {
         "currencyCode" -> payment.currencyAmount.currency
       ),
       "customerDetails" -> Map(
-        "customerLoginID" -> customerLoginId
+        "customerLoginID" -> deal.id
       ),
       "invoice" -> Map(
         "number" -> deal.invoiceId.get

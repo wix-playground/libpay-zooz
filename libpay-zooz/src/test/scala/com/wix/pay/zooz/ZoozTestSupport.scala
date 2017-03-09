@@ -15,7 +15,6 @@ trait ZoozTestSupport extends LibPayTestSupport {
   val someMerchant = ZoozMerchant(programId, programKey)
   val someMerchantStr = JsonZoozMerchantParser.stringify(someMerchant)
 
-  val customerLoginId = randomStringWithLength(14)
   val paymentToken = randomStringWithLength(26)
   val paymentMethodToken = randomStringWithLength(26)
   val authorizationCode = randomStringWithLength(18)

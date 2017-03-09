@@ -23,6 +23,10 @@ class ZoozGatewayTest extends SpecWithJUnit {
       authorize(deal = None) must failWithMessage("Deal is mandatory for ZooZ!")
     }
 
+    "fail if deal id is empty" in new ctx {
+      authorize(deal = Some(someDeal.withId(""))) must failWithMessage("Deal id cannot be empty for ZooZ!")
+    }
+
     "fail if deal invoiceId is missing" in new ctx {
       authorize(deal = Some(someDeal.withoutInvoiceId)) must failWithMessage("Deal invoiceId is mandatory for ZooZ!")
     }
@@ -63,6 +67,10 @@ class ZoozGatewayTest extends SpecWithJUnit {
 
     "fail if deal is missing" in new ctx {
       sale(deal = None) must failWithMessage("Deal is mandatory for ZooZ!")
+    }
+
+    "fail if deal id is empty" in new ctx {
+      sale(deal = Some(someDeal.withId(""))) must failWithMessage("Deal id cannot be empty for ZooZ!")
     }
 
     "fail if deal invoiceId is missing" in new ctx {

@@ -26,33 +26,33 @@ class ZoozGatewayIT extends SpecWithJUnit {
     "fail with PaymentRejectedException for rejected transactions" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
-      givenAuthorizationRequest(paymentToken, paymentMethodToken) isRejectedWith errorMessage
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) getsRejectedWith errorMessage
 
       authorize() must beRejectedWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when opening a payment fails" in new ctx {
-      givenOpenPaymentRequest isAnErrorWith errorMessage
+      givenOpenPaymentRequest getsAnErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when opening a payment fails fatally" in new ctx {
-      givenOpenPaymentRequest isAFatalErrorWith errorMessage
+      givenOpenPaymentRequest getsAFatalErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when adding a payment method fails" in new ctx {
       givenOpenPaymentRequest returns paymentToken
-      givenAddPaymentMethodRequest(paymentToken) isAnErrorWith errorMessage
+      givenAddPaymentMethodRequest(paymentToken) getsAnErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when adding a payment method fails fatally" in new ctx {
       givenOpenPaymentRequest returns paymentToken
-      givenAddPaymentMethodRequest(paymentToken) isAFatalErrorWith errorMessage
+      givenAddPaymentMethodRequest(paymentToken) getsAFatalErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
@@ -60,7 +60,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
     "fail with PaymentErrorException when authorization fails" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
-      givenAuthorizationRequest(paymentToken, paymentMethodToken) isAnErrorWith errorMessage
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) getsAnErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
@@ -68,7 +68,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
     "fail with PaymentErrorException when authorization fails fatally" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
-      givenAuthorizationRequest(paymentToken, paymentMethodToken) isAFatalErrorWith errorMessage
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) getsAFatalErrorWith errorMessage
 
       authorize() must failWithMessage(errorMessage)
     }
@@ -82,19 +82,19 @@ class ZoozGatewayIT extends SpecWithJUnit {
     }
 
     "fail with PaymentRejectedException for rejected transactions" in new ctx {
-      givenCaptureRequest(paymentToken) isRejectedWith errorMessage
+      givenCaptureRequest(paymentToken) getsRejectedWith errorMessage
 
       capture(paymentToken) must beRejectedWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when capture fails" in new ctx {
-      givenCaptureRequest(paymentToken) isAnErrorWith errorMessage
+      givenCaptureRequest(paymentToken) getsAnErrorWith errorMessage
 
       capture(paymentToken) must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when capture fails fatally" in new ctx {
-      givenCaptureRequest(paymentToken) isAFatalErrorWith errorMessage
+      givenCaptureRequest(paymentToken) getsAFatalErrorWith errorMessage
 
       capture(paymentToken) must failWithMessage(errorMessage)
     }
@@ -108,19 +108,19 @@ class ZoozGatewayIT extends SpecWithJUnit {
     }
 
     "fail with PaymentRejectedException for rejected transactions" in new ctx {
-      givenVoidRequest(paymentToken) isRejectedWith errorMessage
+      givenVoidRequest(paymentToken) getsRejectedWith errorMessage
 
       void(paymentToken) must beRejectedWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when void fails" in new ctx {
-      givenVoidRequest(paymentToken) isAnErrorWith errorMessage
+      givenVoidRequest(paymentToken) getsAnErrorWith errorMessage
 
       void(paymentToken) must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when capture fails fatally" in new ctx {
-      givenVoidRequest(paymentToken) isAFatalErrorWith errorMessage
+      givenVoidRequest(paymentToken) getsAFatalErrorWith errorMessage
 
       void(paymentToken) must failWithMessage(errorMessage)
     }
@@ -139,7 +139,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
     "fail with PaymentRejectedException when authorization is rejected" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
-      givenAuthorizationRequest(paymentToken, paymentMethodToken) isRejectedWith errorMessage
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) getsRejectedWith errorMessage
 
       sale() must beRejectedWithMessage(errorMessage)
     }
@@ -148,33 +148,33 @@ class ZoozGatewayIT extends SpecWithJUnit {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
       givenAuthorizationRequest(paymentToken, paymentMethodToken) returns authorizationCode
-      givenCaptureRequest(paymentToken) isRejectedWith errorMessage
+      givenCaptureRequest(paymentToken) getsRejectedWith errorMessage
 
       sale() must beRejectedWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when opening a payment fails" in new ctx {
-      givenOpenPaymentRequest isAnErrorWith errorMessage
+      givenOpenPaymentRequest getsAnErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when opening a payment fails fatally" in new ctx {
-      givenOpenPaymentRequest isAFatalErrorWith errorMessage
+      givenOpenPaymentRequest getsAFatalErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when adding a payment method fails" in new ctx {
       givenOpenPaymentRequest returns paymentToken
-      givenAddPaymentMethodRequest(paymentToken) isAnErrorWith errorMessage
+      givenAddPaymentMethodRequest(paymentToken) getsAnErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
 
     "fail with PaymentErrorException when adding a payment method fails fatally" in new ctx {
       givenOpenPaymentRequest returns paymentToken
-      givenAddPaymentMethodRequest(paymentToken) isAFatalErrorWith errorMessage
+      givenAddPaymentMethodRequest(paymentToken) getsAFatalErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
@@ -182,7 +182,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
     "fail with PaymentErrorException when authorization fails" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
-      givenAuthorizationRequest(paymentToken, paymentMethodToken) isAnErrorWith errorMessage
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) getsAnErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
@@ -190,7 +190,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
     "fail with PaymentErrorException when authorization fails fatally" in new ctx {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
-      givenAuthorizationRequest(paymentToken, paymentMethodToken) isAFatalErrorWith errorMessage
+      givenAuthorizationRequest(paymentToken, paymentMethodToken) getsAFatalErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
@@ -199,7 +199,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
       givenAuthorizationRequest(paymentToken, paymentMethodToken) returns authorizationCode
-      givenCaptureRequest(paymentToken) isAnErrorWith errorMessage
+      givenCaptureRequest(paymentToken) getsAnErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
@@ -208,7 +208,7 @@ class ZoozGatewayIT extends SpecWithJUnit {
       givenOpenPaymentRequest returns paymentToken
       givenAddPaymentMethodRequest(paymentToken) returns paymentMethodToken
       givenAuthorizationRequest(paymentToken, paymentMethodToken) returns authorizationCode
-      givenCaptureRequest(paymentToken) isAFatalErrorWith errorMessage
+      givenCaptureRequest(paymentToken) getsAFatalErrorWith errorMessage
 
       sale() must failWithMessage(errorMessage)
     }
